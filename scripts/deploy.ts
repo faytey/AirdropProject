@@ -1,6 +1,8 @@
 import { ethers } from "hardhat";
 import * as fs from "fs";
-import { StandardMerkleTree } from "@openzeppelin/merkle-tree";import dotenv from "dotenv";
+import MerkleTree from "merkletreejs";
+import {keccak256} from "ethers/lib/utils";
+import dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
@@ -311,26 +313,33 @@ async function main() {
 
   const notUndefined = values.filter(value => value !== undefined);
 
-  const leaves: any = notUndefined.map(value => ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["uint256"], [value])));
+  const leaves = notUndefined.map(value => ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["uint256"], [value])));
   console.log(`your leaves are ${leaves}`);
 
-  const tree = StandardMerkleTree.of(leaves, ethers.utils.keccak256);
-  console.log(`your tree is ${JSON.stringify(tree)}`);
+  const tree = new MerkleTree(leaves, ethers.utils.keccak256);
+  console.log(`your tree is ${tree}`);
 
-  // const root = tree.getRoot();
+  const root = tree.getRoot().toString("hex");
+  console.log(`Your root is ${root}`);
+  
   const proof = tree.getProof(leaves[0]);
+  console.log(`Your proof is ${proof}`);
+
 
   const treeData = {
-    leaves: leaves.map((leaf: { toHexString: () => any; }) => leaf.toHexString()),
-    root: root.toHexString(),
+    leaves: leaves.map(leaf => leaf.toString()),
+    root: root.toString(),
     depth: tree.getDepth()
   };
   fs.writeFileSync('merkle-tree.json', JSON.stringify(treeData));
   fs.writeFileSync('merkle-proof.json', JSON.stringify(proof));
 
   const contract = new ethers.Contract(contractAddress, contractABI, owner);
+  const verify = tree.verify(proof, leaves[0], root);
+  console.log(`verified ${verify}`);
+  
 
-  const conRoot = await contract.setRoot(root);
+  const conRoot =  contract.setRoot(root);
 
   console.log(`contract root is ${conRoot}`);
 
