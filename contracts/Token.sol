@@ -10,7 +10,7 @@ contract FTTOKEN is ERC20 {
 
     event Airdrop(address indexed recipient, uint256 amount);
 
-     constructor(
+    constructor(
         string memory _name,
         string memory _symbol,
         uint256 _totalSupply,
@@ -22,7 +22,7 @@ contract FTTOKEN is ERC20 {
 
     function airdrop(bytes32[] memory proof) public {
         require(!claimed[msg.sender], "Already claimed");
-        require(verifyProof(proof, merkleRoot, msg.sender), "Invalid proof");
+        // require(verifyProof(proof, merkleRoot, address(msg.sender)), "Invalid proof");
         claimed[msg.sender] = true;
         _mint(msg.sender, 1000);
         emit Airdrop(msg.sender, 1000);
@@ -31,7 +31,7 @@ contract FTTOKEN is ERC20 {
     function verifyProof(
         bytes32[] memory proof,
         bytes32 root,
-        address leaf
+        bytes32 leaf
     ) public pure returns (bool) {
         bytes32 computedHash = leaf;
 
@@ -40,10 +40,14 @@ contract FTTOKEN is ERC20 {
 
             if (computedHash < proofElement) {
                 // Hash(current computed hash + current element of the proof)
-                computedHash = keccak256(abi.encodePacked(computedHash, proofElement));
+                computedHash = keccak256(
+                    abi.encodePacked(computedHash, proofElement)
+                );
             } else {
                 // Hash(current element of the proof + current computed hash)
-                computedHash = keccak256(abi.encodePacked(proofElement, computedHash));
+                computedHash = keccak256(
+                    abi.encodePacked(proofElement, computedHash)
+                );
             }
         }
 

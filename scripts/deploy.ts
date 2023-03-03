@@ -7,7 +7,6 @@ dotenv.config();
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET_RPC);
-  const contractAddress = token.address;
   const contractABI = [
     {
       "inputs": [
@@ -320,9 +319,8 @@ async function main() {
 
   const [owner] = await ethers.getSigners();
   const Token = await ethers.getContractFactory("FTTOKEN");
-  const token = await Token.deploy("FTToken", "FT2", 100_000, root);
+  const token = await Token.deploy("FTToken", "FT2", 10_000, root);
   await token.deployed();
-
   console.log(`Contract deployed to ${token.address}`);
 
 
@@ -334,6 +332,7 @@ async function main() {
   fs.writeFileSync('merkle-tree.json', JSON.stringify(treeData));
   fs.writeFileSync('merkle-proof.json', JSON.stringify(proof));
 
+  const contractAddress = token.address;
   const contract = new ethers.Contract(contractAddress, contractABI, owner);
   const verify = tree.verify(proof, leaves[0], root);
   console.log(`verified ${verify}`);
