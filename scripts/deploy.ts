@@ -6,13 +6,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
-  const [owner] = await ethers.getSigners();
-  const Token = await ethers.getContractFactory("FTTOKEN");
-  const token = await Token.deploy("FTToken", "FT2");
-  await token.deployed();
-
-  console.log(`Contract deployed to ${token.address}`);
-
   const provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET_RPC);
   const contractAddress = token.address;
   const contractABI = [
@@ -325,6 +318,13 @@ async function main() {
   const proof = tree.getProof(leaves[0]);
   console.log(`Your proof is ${proof}`);
 
+  const [owner] = await ethers.getSigners();
+  const Token = await ethers.getContractFactory("FTTOKEN");
+  const token = await Token.deploy("FTToken", "FT2", 100_000, root);
+  await token.deployed();
+
+  console.log(`Contract deployed to ${token.address}`);
+
 
   const treeData = {
     leaves: leaves.map(leaf => leaf.toString()),
@@ -339,9 +339,9 @@ async function main() {
   console.log(`verified ${verify}`);
   
 
-  const conRoot =  contract.setRoot(root);
+  // const conRoot =  contract.setRoot(root);
 
-  console.log(`contract root is ${conRoot}`);
+  // console.log(`contract root is ${conRoot}`);
 
   const exampleAddress = '0x9bF599C7BC72c4fB4fE2C4CE0e7bBca8541d61f9';
 const exampleValue = values[0]; // Value corresponding to example address
